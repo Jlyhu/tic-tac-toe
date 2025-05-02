@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triqui Tic Tac</title>
+    <title>Ser familia de todas formas con</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -39,7 +39,7 @@
             z-index: -1;
             opacity: 0.8;
             pointer-events: none;
-            background: #1a0033;
+            background: #3E2723; /* Café oscuro */
         }
 
         /* Capa semitransparente */
@@ -49,8 +49,19 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: rgba(26, 0, 51, 0.7);
+            background-color: rgba(62, 39, 35, 0.7); /* Café oscuro con transparencia */
             z-index: -1;
+        }
+
+        /* Logo */
+        #logo-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        #logo {
+            max-width: 200px;
+            height: auto;
         }
 
         /* Contenido principal */
@@ -64,8 +75,8 @@
         }
 
         h1 {
-            color: #e0b0ff;
-            text-shadow: 0 0 10px rgba(156, 39, 176, 0.7);
+            color: #D7CCC8; /* Café claro */
+            text-shadow: 0 0 10px rgba(121, 85, 72, 0.7); /* Café medio */
             margin: 10px 0;
             font-size: clamp(20px, 5vw, 28px);
             text-align: center;
@@ -83,8 +94,8 @@
             padding-bottom: 100%;
             overflow: hidden;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(156, 39, 176, 0.5);
-            background-color: rgba(26, 0, 51, 0.5);
+            box-shadow: 0 0 20px rgba(121, 85, 72, 0.5); /* Café medio */
+            background-color: rgba(62, 39, 35, 0.5); /* Café oscuro */
         }
         
         #game-canvas {
@@ -100,12 +111,12 @@
             text-align: center;
             font-size: clamp(18px, 4vw, 22px);
             margin: 10px 0;
-            color: #e0b0ff;
+            color: #D7CCC8; /* Café claro */
             font-weight: 600;
         }
         
         button {
-            background-color: #9c27b0;
+            background-color: #BF360C; /* Rojo oscuro/terracota */
             border: none;
             color: white;
             padding: 12px 20px;
@@ -126,7 +137,7 @@
         #start-btn {
             font-size: clamp(16px, 5vw, 20px);
             padding: 12px 25px;
-            background: linear-gradient(135deg, #9c27b0, #673ab7);
+            background: linear-gradient(135deg, #BF360C, #E64A19); /* Terracota a naranja */
             margin: 15px 0;
             font-weight: 600;
         }
@@ -137,7 +148,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(26, 0, 51, 0.9);
+            background-color: rgba(62, 39, 35, 0.9); /* Café oscuro */
             display: none;
             flex-direction: column;
             align-items: center;
@@ -148,9 +159,9 @@
         
         #game-over h2 {
             font-size: clamp(24px, 6vw, 36px);
-            color: #ff6b6b;
+            color: #FF8A65; /* Naranja claro */
             margin-bottom: 15px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            text-shadow: 0 0 10px rgba(191, 54, 12, 0.5); /* Rojo oscuro/terracota */
             text-align: center;
             padding: 0 10px;
         }
@@ -160,7 +171,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: rgba(156, 39, 176, 0.7);
+            background-color: rgba(191, 54, 12, 0.7); /* Rojo oscuro/terracota */
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -211,7 +222,10 @@
     
     <!-- Contenido del juego -->
     <div id="contenido-principal">
-        <h1>Triqui Tic Tac</h1>
+        <div id="logo-container">
+            <img id="logo" src="logotictac.png" alt="Logo Tic Tac">
+        </div>
+        <h1>Ser familia de todas formas con</h1>
         
         <div id="game-container">
             <div id="score-display">Turno: <span id="current-player">X</span></div>
@@ -261,7 +275,7 @@
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
                     const playButton = document.createElement('div');
-                    playButton.innerHTML = '<div style="position:fixed; bottom:80px; right:20px; background:rgba(156,39,176,0.7); color:white; padding:10px; border-radius:20px; z-index:100; cursor:pointer;">Activar Video</div>';
+                    playButton.innerHTML = '<div style="position:fixed; bottom:80px; right:20px; background:rgba(191, 54, 12, 0.7); color:white; padding:10px; border-radius:20px; z-index:100; cursor:pointer;">Activar Video</div>';
                     playButton.onclick = () => {
                         videoFondo.play();
                         playButton.remove();
@@ -330,9 +344,9 @@
             // Limpiar completamente el canvas primero
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            ctx.fillStyle = 'rgba(26, 0, 51, 0.8)';
+            ctx.fillStyle = 'rgba(62, 39, 35, 0.8)'; /* Café oscuro */
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#e0b0ff';
+            ctx.fillStyle = '#D7CCC8'; /* Café claro */
             ctx.font = '20px Poppins';
             ctx.textAlign = 'center';
             ctx.fillText('¡Presiona el botón para empezar!', canvas.width / 2, canvas.height / 2);
@@ -417,11 +431,11 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             // Fondo semitransparente
-            ctx.fillStyle = 'rgba(26, 0, 51, 0.5)';
+            ctx.fillStyle = 'rgba(62, 39, 35, 0.5)'; /* Café oscuro */
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Dibujar líneas del tablero
-            ctx.strokeStyle = '#e0b0ff';
+            ctx.strokeStyle = '#D7CCC8'; /* Café claro */
             ctx.lineWidth = 4;
             
             // Líneas verticales
@@ -449,7 +463,7 @@
                     // Parpadeo instantáneo en lugar de gradual
                     const time = Date.now();
                     if (Math.floor(time / 250) % 2 === 0) {
-                        ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+                        ctx.fillStyle = 'rgba(255, 171, 64, 0.7)'; /* Naranja */
                         ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
                     }
                 }
@@ -468,7 +482,7 @@
         }
         
         function drawX(x, y) {
-            ctx.strokeStyle = '#ff6b6b';
+            ctx.strokeStyle = '#E64A19'; /* Naranja oscuro */
             ctx.lineWidth = 8;
             const size = cellSize * 0.3;
             
@@ -482,7 +496,7 @@
         
         function drawO(x, y) {
             // Dibujar pastilla Tic Tac (rectángulo con bordes redondeados)
-            ctx.fillStyle = '#4caf50';
+            ctx.fillStyle = '#BF360C'; /* Terracota */
             const width = cellSize * 0.4;
             const height = cellSize * 0.2;
             const radius = height / 2;
