@@ -27,33 +27,6 @@
             background-color: #F5FFFD; /* Menta muy claro */
         }
 
-        /* Video de fondo */
-        #video-fondo-completo {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: -1;
-            opacity: 0.3;
-            pointer-events: none;
-            background: #B8E1D1; /* Menta medio */
-        }
-
-        /* Capa semitransparente */
-        #capa-oscura {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(184, 225, 209, 0.4); /* Menta medio con transparencia */
-            z-index: -1;
-        }
-
         /* Logo */
         #logo-container {
             margin: 10px 0;
@@ -211,15 +184,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Video de fondo con poster como fallback -->
-    <video id="video-fondo-completo" autoplay muted loop playsinline webkit-playsinline>
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-purple-and-blue-light-abstract-background-1292-large.mp4" type="video/mp4">
-        Tu navegador no soporta video HTML5.
-    </video>
-    
-    <!-- Capa oscura -->
-    <div id="capa-oscura"></div>
-    
     <!-- Control de música -->
     <div id="music-control" title="Música ON/OFF">
         <i class="fas fa-music"></i>
@@ -252,15 +216,15 @@
     <audio id="move-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3"></audio>
     <audio id="win-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
     <audio id="draw-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
-    <audio id="bg-music" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-happy-times-158.mp3" type="audio/mpeg">
+    <audio id="bg-music">
+        <source src="musicatictac.mp3" type="audio/mpeg">
+        Tu navegador no soporta audio HTML5.
     </audio>
     
     <script>
         // Configuración del juego
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
-        const videoFondo = document.getElementById('video-fondo-completo');
         const currentPlayerDisplay = document.getElementById('current-player');
         const winnerDisplay = document.getElementById('winner');
         const resultMessage = document.getElementById('result-message');
@@ -273,30 +237,6 @@
         const bgMusic = document.getElementById('bg-music');
         const musicControl = document.getElementById('music-control');
         
-        // Solución para autoplay en móviles
-        function handleVideoPlay() {
-            const playPromise = videoFondo.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    const playButton = document.createElement('div');
-                    playButton.innerHTML = '<div style="position:fixed; bottom:80px; right:20px; background:rgba(107, 187, 161, 0.8); color:white; padding:10px; border-radius:20px; z-index:100; cursor:pointer;">Activar Video</div>';
-                    playButton.onclick = () => {
-                        videoFondo.play();
-                        playButton.remove();
-                    };
-                    document.body.appendChild(playButton);
-                });
-            }
-        }
-
-        document.addEventListener('touchstart', function firstTouch() {
-            handleVideoPlay();
-            document.removeEventListener('touchstart', firstTouch);
-        });
-
-        window.addEventListener('load', handleVideoPlay);
-        
         // Variables del juego
         let board = ['', '', '', '', '', '', '', '', ''];
         let currentPlayer = 'X';
@@ -308,7 +248,6 @@
         // Inicializar el juego
         function initGame() {
             setupMusicControls();
-            videoFondo.play().catch(e => console.log("Autoplay bloqueado:", e));
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             setupControls();
@@ -329,7 +268,7 @@
             isMusicOn = !isMusicOn;
             
             if(isMusicOn) {
-                bgMusic.play();
+                bgMusic.play().catch(e => console.log("Error al reproducir música:", e));
                 musicControl.innerHTML = '<i class="fas fa-volume-up"></i>';
                 musicControl.title = "Música OFF";
             } else {
