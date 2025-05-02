@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triqui Tic Tac</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            overflow-x: hidden;
+            touch-action: manipulation;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Video de fondo */
+        #video-fondo-completo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            opacity: 0.8;
+            pointer-events: none;
+            background: #1a0033;
+        }
+
+        /* Capa semitransparente */
+        #capa-oscura {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(26, 0, 51, 0.7);
+            z-index: -1;
+        }
+
+        /* Contenido principal */
+        #contenido-principal {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #e0b0ff;
+            text-shadow: 0 0 10px rgba(156, 39, 176, 0.7);
+            margin: 10px 0;
+            font-size: clamp(20px, 5vw, 28px);
+            text-align: center;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        #canvas-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(156, 39, 176, 0.5);
+            background-color: rgba(26, 0, 51, 0.5);
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        #score-display {
+            text-align: center;
+            font-size: clamp(18px, 4vw, 22px);
+            margin: 10px 0;
+            color: #e0b0ff;
+            font-weight: 600;
+        }
+        
+        button {
+            background-color: #9c27b0;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(14px, 4vw, 16px);
+            margin: 8px;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: auto;
+            max-width: 100%;
+        }
+        
+        #start-btn {
+            font-size: clamp(16px, 5vw, 20px);
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #9c27b0, #673ab7);
+            margin: 15px 0;
+            font-weight: 600;
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(26, 0, 51, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 10px;
+        }
+        
+        #game-over h2 {
+            font-size: clamp(24px, 6vw, 36px);
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        /* Control de música */
+        #music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(156, 39, 176, 0.7);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #music-control i {
+            color: white;
+            font-size: 24px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Animación de ganador modificada para que sea instantánea */
+        .winning-cell {
+            animation: flash 0.5s step-end infinite;
+        }
+        
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+    <!-- Iconos de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Video de fondo con poster como fallback -->
+    <video id="video-fondo-completo" autoplay muted loop playsinline webkit-playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-purple-and-blue-light-abstract-background-1292-large.mp4" type="video/mp4">
+        Tu navegador no soporta video HTML5.
+    </video>
+    
+    <!-- Capa oscura -->
+    <div id="capa-oscura"></div>
+    
+    <!-- Control de música -->
+    <div id="music-control" title="Música ON/OFF">
+        <i class="fas fa-music"></i>
+    </div>
+    
+    <!-- Contenido del juego -->
+    <div id="contenido-principal">
+        <h1>Triqui Tic Tac</h1>
+        
+        <div id="game-container">
+            <div id="score-display">Turno: <span id="current-player">X</span></div>
+            <div id="canvas-wrapper">
+                <canvas id="game-canvas"></canvas>
+                
+                <div id="game-over">
+                    <h2 id="result-message">¡Ganaste!</h2>
+                    <p>Ganador: <span id="winner">X</span></p>
+                    <button id="restart-btn">Jugar de nuevo</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="start-btn">¡Empezar Juego!</button>
+    </div>
+    
+    <!-- Audio -->
+    <audio id="move-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3"></audio>
+    <audio id="win-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+    <audio id="draw-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
+    <audio id="bg-music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-happy-times-158.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        // Configuración del juego
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const videoFondo = document.getElementById('video-fondo-completo');
+        const currentPlayerDisplay = document.getElementById('current-player');
+        const winnerDisplay = document.getElementById('winner');
+        const resultMessage = document.getElementById('result-message');
+        const gameOverScreen = document.getElementById('game-over');
+        const restartBtn = document.getElementById('restart-btn');
+        const startBtn = document.getElementById('start-btn');
+        const moveSound = document.getElementById('move-sound');
+        const winSound = document.getElementById('win-sound');
+        const drawSound = document.getElementById('draw-sound');
+        const bgMusic = document.getElementById('bg-music');
+        const musicControl = document.getElementById('music-control');
+        
+        // Solución para autoplay en móviles
+        function handleVideoPlay() {
+            const playPromise = videoFondo.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    const playButton = document.createElement('div');
+                    playButton.innerHTML = '<div style="position:fixed; bottom:80px; right:20px; background:rgba(156,39,176,0.7); color:white; padding:10px; border-radius:20px; z-index:100; cursor:pointer;">Activar Video</div>';
+                    playButton.onclick = () => {
+                        videoFondo.play();
+                        playButton.remove();
+                    };
+                    document.body.appendChild(playButton);
+                });
+            }
+        }
+
+        document.addEventListener('touchstart', function firstTouch() {
+            handleVideoPlay();
+            document.removeEventListener('touchstart', firstTouch);
+        });
+
+        window.addEventListener('load', handleVideoPlay);
+        
+        // Variables del juego
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = false;
+        let isMusicOn = false;
+        let cellSize;
+        let winningCells = [];
+        
+        // Inicializar el juego
+        function initGame() {
+            setupMusicControls();
+            videoFondo.play().catch(e => console.log("Autoplay bloqueado:", e));
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            setupControls();
+            showStartScreen();
+        }
+        
+        function setupMusicControls() {
+            musicControl.addEventListener('click', toggleMusic);
+            document.addEventListener('click', function firstInteraction() {
+                if(!isMusicOn) {
+                    toggleMusic();
+                }
+                document.removeEventListener('click', firstInteraction);
+            });
+        }
+        
+        function toggleMusic() {
+            isMusicOn = !isMusicOn;
+            
+            if(isMusicOn) {
+                bgMusic.play();
+                musicControl.innerHTML = '<i class="fas fa-volume-up"></i>';
+                musicControl.title = "Música OFF";
+            } else {
+                bgMusic.pause();
+                musicControl.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                musicControl.title = "Música ON";
+            }
+        }
+        
+        function setupControls() {
+            canvas.addEventListener('click', handleCanvasClick);
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', resetGame);
+        }
+        
+        function showStartScreen() {
+            // Limpiar completamente el canvas primero
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'rgba(26, 0, 51, 0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#e0b0ff';
+            ctx.font = '20px Poppins';
+            ctx.textAlign = 'center';
+            ctx.fillText('¡Presiona el botón para empezar!', canvas.width / 2, canvas.height / 2);
+            startBtn.classList.remove('hidden');
+        }
+        
+        function startGame() {
+            if (!gameActive) {
+                resetGame();
+                startBtn.style.display = 'none';
+                // Limpiar el mensaje de inicio y asegurar que el tablero esté vacío
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBoard();
+            }
+        }
+        
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const size = wrapper.offsetWidth;
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            cellSize = size / 3;
+            
+            // Asegurarnos de limpiar el canvas primero
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (gameActive) {
+                drawBoard();
+            } else {
+                showStartScreen();
+            }
+        }
+        
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            winningCells = [];
+            currentPlayerDisplay.textContent = currentPlayer;
+            gameOverScreen.style.display = 'none';
+            
+            // Limpiar completamente el canvas antes de dibujar el nuevo tablero
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBoard();
+        }
+        
+        function handleCanvasClick(event) {
+            if (!gameActive) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+            const index = row * 3 + col;
+            
+            if (board[index] === '') {
+                board[index] = currentPlayer;
+                playSound(moveSound);
+                drawBoard();
+                
+                if (checkWin()) {
+                    handleGameEnd(false);
+                    return;
+                }
+                
+                if (checkDraw()) {
+                    handleGameEnd(true);
+                    return;
+                }
+                
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                currentPlayerDisplay.textContent = currentPlayer;
+            }
+        }
+        
+        function drawBoard() {
+            // Limpiar completamente el tablero primero
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Fondo semitransparente
+            ctx.fillStyle = 'rgba(26, 0, 51, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar líneas del tablero
+            ctx.strokeStyle = '#e0b0ff';
+            ctx.lineWidth = 4;
+            
+            // Líneas verticales
+            ctx.beginPath();
+            ctx.moveTo(cellSize, 0);
+            ctx.lineTo(cellSize, canvas.height);
+            ctx.moveTo(cellSize * 2, 0);
+            ctx.lineTo(cellSize * 2, canvas.height);
+            // Líneas horizontales
+            ctx.moveTo(0, cellSize);
+            ctx.lineTo(canvas.width, cellSize);
+            ctx.moveTo(0, cellSize * 2);
+            ctx.lineTo(canvas.width, cellSize * 2);
+            ctx.stroke();
+            
+            // Dibujar X y O
+            for (let i = 0; i < 9; i++) {
+                const row = Math.floor(i / 3);
+                const col = i % 3;
+                const x = col * cellSize + cellSize / 2;
+                const y = row * cellSize + cellSize / 2;
+                
+                // Resaltar celdas ganadoras - Modificado para ser instantáneo
+                if (winningCells.includes(i)) {
+                    // Parpadeo instantáneo en lugar de gradual
+                    const time = Date.now();
+                    if (Math.floor(time / 250) % 2 === 0) {
+                        ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+                        ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                    }
+                }
+                
+                if (board[i] === 'X') {
+                    drawX(x, y);
+                } else if (board[i] === 'O') {
+                    drawO(x, y);
+                }
+            }
+            
+            // Si hay celdas ganadoras, repetir el renderizado para crear un parpadeo instantáneo
+            if (winningCells.length > 0 && !gameActive) {
+                requestAnimationFrame(drawBoard);
+            }
+        }
+        
+        function drawX(x, y) {
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 8;
+            const size = cellSize * 0.3;
+            
+            ctx.beginPath();
+            ctx.moveTo(x - size, y - size);
+            ctx.lineTo(x + size, y + size);
+            ctx.moveTo(x + size, y - size);
+            ctx.lineTo(x - size, y + size);
+            ctx.stroke();
+        }
+        
+        function drawO(x, y) {
+            // Dibujar pastilla Tic Tac (rectángulo con bordes redondeados)
+            ctx.fillStyle = '#4caf50';
+            const width = cellSize * 0.4;
+            const height = cellSize * 0.2;
+            const radius = height / 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(x - width/2 + radius, y - height/2);
+            ctx.lineTo(x + width/2 - radius, y - height/2);
+            ctx.quadraticCurveTo(x + width/2, y - height/2, x + width/2, y - height/2 + radius);
+            ctx.lineTo(x + width/2, y + height/2 - radius);
+            ctx.quadraticCurveTo(x + width/2, y + height/2, x + width/2 - radius, y + height/2);
+            ctx.lineTo(x - width/2 + radius, y + height/2);
+            ctx.quadraticCurveTo(x - width/2, y + height/2, x - width/2, y + height/2 - radius);
+            ctx.lineTo(x - width/2, y - height/2 + radius);
+            ctx.quadraticCurveTo(x - width/2, y - height/2, x - width/2 + radius, y - height/2);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function checkWin() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // filas
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columnas
+                [0, 4, 8], [2, 4, 6]             // diagonales
+            ];
+            
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] !== '' && board[a] === board[b] && board[a] === board[c]) {
+                    winningCells = pattern;
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        function checkDraw() {
+            return board.every(cell => cell !== '');
+        }
+        
+        function handleGameEnd(isDraw) {
+            gameActive = false;
+            
+            if (isDraw) {
+                resultMessage.textContent = "¡Empate!";
+                winnerDisplay.textContent = "Ninguno";
+                playSound(drawSound);
+            } else {
+                resultMessage.textContent = "¡Ganador!";
+                winnerDisplay.textContent = currentPlayer;
+                playSound(winSound);
+                // Resaltar las celdas ganadoras con parpadeo instantáneo
+                drawBoard();
+            }
+            
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        function playSound(sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Error al reproducir sonido:", e));
+        }
+        
+        // Iniciar el juego
+        window.onload = initGame;
+    </script>
+</body>
+</html>
